@@ -31,7 +31,7 @@ document.getElementById("form-login").addEventListener("submit", async function 
 
         document.getElementById("area-login").style.display = "none";
         document.getElementById("area-veiculos").style.display = "block";
-        listarVeiculos();
+        await listarVeiculos();
 
     } catch (error) {
         console.error("Erro:", error);
@@ -75,8 +75,6 @@ async function listarVeiculos() {
 
 // ===================== ABRIR / FECHAR FORMULÁRIO =====================
 function abrirFormulario() {
-    const menu = document.getElementById("menu-lateral");
-    menu.classList.add("active"); // abre o menu lateral
     document.getElementById("cadastro-veiculo").style.display = "block";
 }
 
@@ -102,22 +100,26 @@ document.getElementById("form-veiculo").addEventListener("submit", async (event)
     };
 
     try {
+        let response;
         if (veiculoEditando) {
-            await fetch(`${urlVeiculos}/${veiculoEditando.id}`, {
+            response = await fetch(`${urlVeiculos}/${veiculoEditando.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(veiculoData)
             });
             veiculoEditando = null;
         } else {
-            await fetch(urlVeiculos, {
+            response = await fetch(urlVeiculos, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(veiculoData)
             });
         }
 
-        listarVeiculos();
+        if (!response.ok) throw new Error("Erro ao salvar veículo");
+
+        // Atualiza a lista de veículos somente após salvar
+        await listarVeiculos();
         fecharFormulario();
 
     } catch (error) {
@@ -133,7 +135,7 @@ async function editarVeiculo(id) {
         if (!response.ok) throw new Error("Veículo não encontrado");
         veiculoEditando = await response.json();
 
-        // Preenche os campos do formulário
+        // Preenche formulário de cadastro com dados do veículo
         document.getElementById("modelo").value = veiculoEditando.modelo;
         document.getElementById("marca").value = veiculoEditando.marca;
         document.getElementById("ano").value = veiculoEditando.ano;
@@ -143,7 +145,7 @@ async function editarVeiculo(id) {
         document.getElementById("status").value = veiculoEditando.status;
         document.getElementById("fotoUrl").value = veiculoEditando.fotoUrl;
 
-        abrirFormulario(); // abre o menu lateral com formulário preenchido
+        abrirFormulario();
     } catch (error) {
         console.error(error);
         alert("Erro ao carregar veículo para edição.");
@@ -166,17 +168,18 @@ async function deletarVeiculo(id) {
     }
 }
 
-// ===================== BOTÕES =====================
+// ===================== BOTÃO NOVO VEÍCULO =====================
 document.getElementById("btn-cadastrar-veiculo").addEventListener("click", () => {
     veiculoEditando = null;
     abrirFormulario();
 });
 
+// ===================== CANCELAR FORMULÁRIO =====================
 document.getElementById("btn-cancelar").addEventListener("click", () => {
     fecharFormulario();
 });
 
-// ===================== MENU HAMBÚRGUER =====================
+// ===================== MENU LATERAL (HAMBÚRGUER) =====================
 function toggleMenu() {
     document.getElementById("menu-lateral").classList.toggle("active");
 }
