@@ -44,5 +44,5 @@ public class Veiculo {
 
     @NotBlank
     @URL
-    private String fotoUrl; // Novo campo
+    private String fotoUrl;
 }

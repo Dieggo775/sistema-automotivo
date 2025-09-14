@@ -1,0 +1,41 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f5f1f1;
+}
+
+h1, h2 {
+  color: #030303;
+}
+
+#lista-veiculos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.veiculo-card {
+  border-radius: 12px;
+  padding: 15px;
+  background-color: #fff;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.veiculo-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.veiculo-card button {
+  margin: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}

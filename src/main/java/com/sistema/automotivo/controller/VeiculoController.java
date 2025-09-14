@@ -53,16 +53,20 @@ public class VeiculoController {
     // Visualizar veículo com foto no Postman
     @GetMapping("/{id}/visualizar")
     public ResponseEntity<String> visualizarVeiculo(@PathVariable Long id) {
-        Veiculo veiculo = veiculoService.buscarPorId(id)
-                .orElseThrow(() -> new EntityNotFoundException("Veículo com ID " + id + " não encontrado."));
-
-        String html = "<h2>" + veiculo.getMarca() + " " + veiculo.getModelo() + "</h2>" +
-                "<p>Ano: " + veiculo.getAno() + " | Cor: " + veiculo.getCor() +
-                " | Preço: R$ " + veiculo.getPreco() + "</p>" +
-                "<img src='" + veiculo.getFotoUrl() + "' alt='Foto do Veículo' width='400'/>";
-
-        return ResponseEntity.ok().header("Content-Type", "text/html").body(html);
+        return veiculoService.buscarPorId(id)
+                .map(veiculo -> {
+                    String html = "<h1>" + veiculo.getMarca() + " " + veiculo.getModelo() + "</h1>" +
+                            "<p>Ano: " + veiculo.getAno() + "</p>" +
+                            "<p>Cor: " + veiculo.getCor() + "</p>" +
+                            "<p>Preço: R$ " + veiculo.getPreco() + "</p>" +
+                            "<p>Quilometragem: " + veiculo.getQuilometragem() + " km</p>" +
+                            "<p>Status: " + veiculo.getStatus() + "</p>" +
+                            "<img src='" + veiculo.getFotoUrl() + "' alt='Foto do Veículo' width='400'/>";
+                    return ResponseEntity.ok().header("Content-Type", "text/html").body(html);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
+
 
     // Atualizar veículo
     @PutMapping("/{id}")
