@@ -1,196 +1,158 @@
-const urlUsuarios = "http://localhost:8080/usuarios";
 const urlVeiculos = "http://localhost:8080/veiculos";
+let veiculoEditando = null;
 
-let usuarioLogado = null;
-let modoEdicao = false;
-let veiculoEditandoId = null;
-
-// Mensagens
-function mostrarMensagem(msg, tipo="erro") {
-    const div = tipo === "erro" ? document.getElementById("mensagemErro") : document.getElementById("mensagemSucesso");
-    div.textContent = msg;
-    setTimeout(()=>{ div.textContent = ""; }, 3000);
-}
-
-// ================= LOGIN / CADASTRO =================
-document.getElementById("form-login").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const nome = document.getElementById("login-nome").value.trim();
-    const email = document.getElementById("login-email").value.trim();
-    const telefone = document.getElementById("login-telefone").value.trim();
-    if(!nome || !email || !telefone){ mostrarMensagem("Preencha todos os campos."); return; }
+// LOGIN
+document.getElementById("form-login").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const nome = document.getElementById("login-nome").value;
+    const email = document.getElementById("login-email").value;
+    const telefone = document.getElementById("login-telefone").value;
 
     try {
-        const resp = await fetch(`${urlUsuarios}?email=${encodeURIComponent(email)}`);
-        const usuarios = await resp.json();
-        if(usuarios.length === 0){
-            const novoResp = await fetch(urlUsuarios, {
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({nome,email,telefone})
-            });
-            usuarioLogado = await novoResp.json();
-            mostrarMensagem("Usuário cadastrado!","sucesso");
+        const response = await fetch(`http://localhost:8080/usuarios/buscar?email=${encodeURIComponent(email)}`);
+        let usuario;
+
+        if (response.ok) {
+            usuario = await response.json();
+            document.getElementById("mensagemSucesso").innerText = "Login realizado com sucesso!";
         } else {
-            usuarioLogado = usuarios[0];
-            mostrarMensagem("Login realizado!","sucesso");
+            const cadastrarResponse = await fetch("http://localhost:8080/usuarios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nome, email, telefone })
+            });
+            usuario = await cadastrarResponse.json();
+            document.getElementById("mensagemSucesso").innerText = "Usuário cadastrado e logado!";
         }
 
-        document.getElementById("area-login").style.display="none";
-        document.getElementById("area-veiculos").style.display="block";
+        document.getElementById("area-login").style.display = "none";
+        document.getElementById("area-veiculos").style.display = "block";
         listarVeiculos();
-
-    } catch(err){ console.error(err); mostrarMensagem("Erro ao acessar usuário."); }
+    } catch (error) {
+        console.error(error);
+        document.getElementById("mensagemErro").innerText = "Erro ao acessar usuário.";
+    }
 });
 
-// ================= LISTAR VEÍCULOS =================
-async function listarVeiculos(){
-    try{
-        const resp = await fetch(urlVeiculos);
-        const data = await resp.json();
+// LISTAR VEÍCULOS
+async function listarVeiculos() {
+    try {
+        const response = await fetch(urlVeiculos);
+        if (!response.ok) throw new Error("Erro ao buscar veículos");
+        const veiculos = await response.json();
         const lista = document.getElementById("lista-veiculos");
-        lista.innerHTML="";
-        data.forEach(v=>{
+        lista.innerHTML = "";
+
+        veiculos.forEach(v => {
             const card = document.createElement("div");
-            card.className="veiculo-card";
-
-            const img = document.createElement("img");
-            img.src=v.imagemUrl || "https://via.placeholder.com/200x120?text=Sem+Imagem";
-            img.alt=v.modelo;
-            card.appendChild(img);
-
-            const info = document.createElement("div");
-            info.innerHTML=`
-                <h3>${v.modelo} - ${v.marca}</h3>
-                <p>Ano: ${v.ano}</p>
-                <p>Cor: ${v.cor}</p>
-                <p>Preço: R$ ${v.preco}</p>
-                <p>Quilometragem: ${v.quilometragem} km</p>
-                <p>Status: ${v.status}</p>
+            card.classList.add("veiculo-card");
+            card.innerHTML = `
+                <img src="${v.fotoUrl}" alt="${v.modelo}" class="veiculo-foto">
+                <h3>${v.marca} - ${v.modelo}</h3>
+                <p><strong>Ano:</strong> ${v.ano}</p>
+                <p><strong>Cor:</strong> ${v.cor}</p>
+                <p><strong>Preço:</strong> R$ ${v.preco.toLocaleString()}</p>
+                <p><strong>Km:</strong> ${v.quilometragem}</p>
+                <p><strong>Status:</strong> ${v.status}</p>
+                <button onclick="editarVeiculo(${v.id})">✏️ Editar</button>
+                <button onclick="deletarVeiculo(${v.id})">🗑️ Deletar</button>
             `;
-            card.appendChild(info);
-
-            // Botões editar/deletar
-            const btnEditar = document.createElement("button");
-            btnEditar.textContent="Editar";
-            btnEditar.onclick=()=>abrirEdicao(v);
-            card.appendChild(btnEditar);
-
-            const btnDeletar = document.createElement("button");
-            btnDeletar.textContent="Deletar";
-            btnDeletar.onclick=()=>deletarVeiculo(v.id);
-            card.appendChild(btnDeletar);
-
             lista.appendChild(card);
         });
-
-    } catch(err){ console.error(err); mostrarMensagem("Erro ao carregar veículos."); }
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao listar veículos.");
+    }
 }
 
-// ================= ADICIONAR / EDITAR =================
-document.getElementById("form-veiculo").addEventListener("submit", async(event)=>{
+// ABRIR / FECHAR FORMULÁRIO
+function abrirFormulario() { document.getElementById("cadastro-veiculo").style.display = "block"; }
+function fecharFormulario() {
+    document.getElementById("cadastro-veiculo").style.display = "none";
+    document.getElementById("form-veiculo").reset();
+    veiculoEditando = null;
+}
+
+// CADASTRAR / ATUALIZAR VEÍCULO
+document.getElementById("form-veiculo").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const modelo = document.getElementById("veiculo-modelo").value.trim();
-    const marca = document.getElementById("veiculo-marca").value.trim();
-    const ano = parseInt(document.getElementById("veiculo-ano").value);
-    const cor = document.getElementById("veiculo-cor").value.trim();
-    const preco = parseFloat(document.getElementById("veiculo-preco").value);
-    const quilometragem = parseInt(document.getElementById("veiculo-quilometragem").value);
-    const status = document.getElementById("veiculo-status").value.trim();
-    const imagemUrl = document.getElementById("veiculo-imagem").value.trim();
+    const veiculoData = {
+        modelo: document.getElementById("modelo").value,
+        marca: document.getElementById("marca").value,
+        ano: parseInt(document.getElementById("ano").value),
+        cor: document.getElementById("cor").value,
+        preco: parseFloat(document.getElementById("preco").value),
+        quilometragem: parseInt(document.getElementById("quilometragem").value),
+        status: document.getElementById("status").value,
+        fotoUrl: document.getElementById("fotoUrl").value
+    };
 
-    const veiculo = {modelo, marca, ano, cor, preco, quilometragem, status, imagemUrl};
-
-    try{
-        if(modoEdicao){
-            const resp = await fetch(`${urlVeiculos}/${veiculoEditandoId}`,{
-                method:"PUT",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify(veiculo)
+    try {
+        if (veiculoEditando) {
+            await fetch(`${urlVeiculos}/${veiculoEditando.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(veiculoData)
             });
-            if(!resp.ok) throw new Error("Erro ao atualizar");
-            mostrarMensagem("Veículo atualizado!","sucesso");
-            modoEdicao=false;
-            veiculoEditandoId=null;
+            veiculoEditando = null;
         } else {
-            const resp = await fetch(urlVeiculos,{
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify(veiculo)
+            await fetch(urlVeiculos, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(veiculoData)
             });
-            if(!resp.ok) throw new Error("Erro ao adicionar");
-            mostrarMensagem("Veículo adicionado!","sucesso");
         }
-
-        document.getElementById("form-veiculo").reset();
         listarVeiculos();
-
-    } catch(err){ console.error(err); mostrarMensagem(err.message); }
+        fecharFormulario();
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao salvar veículo.");
+    }
 });
 
-// ================= ABRIR EDIÇÃO =================
-function abrirEdicao(v){
-    modoEdicao=true;
-    veiculoEditandoId=v.id;
-    document.getElementById("veiculo-modelo").value=v.modelo;
-    document.getElementById("veiculo-marca").value=v.marca;
-    document.getElementById("veiculo-ano").value=v.ano;
-    document.getElementById("veiculo-cor").value=v.cor;
-    document.getElementById("veiculo-preco").value=v.preco;
-    document.getElementById("veiculo-quilometragem").value=v.quilometragem;
-    document.getElementById("veiculo-status").value=v.status;
-    document.getElementById("veiculo-imagem").value=v.imagemUrl;
+// EDITAR VEÍCULO
+async function editarVeiculo(id) {
+    try {
+        const response = await fetch(`${urlVeiculos}/${id}`);
+        veiculoEditando = await response.json();
+        document.getElementById("modelo").value = veiculoEditando.modelo;
+        document.getElementById("marca").value = veiculoEditando.marca;
+        document.getElementById("ano").value = veiculoEditando.ano;
+        document.getElementById("cor").value = veiculoEditando.cor;
+        document.getElementById("preco").value = veiculoEditando.preco;
+        document.getElementById("quilometragem").value = veiculoEditando.quilometragem;
+        document.getElementById("status").value = veiculoEditando.status;
+        document.getElementById("fotoUrl").value = veiculoEditando.fotoUrl;
+        abrirFormulario();
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao carregar veículo para edição.");
+    }
 }
 
-// ================= DELETE =================
-async function deletarVeiculo(id){
-    if(!confirm("Deseja deletar este veículo?")) return;
-    try{
-        const resp = await fetch(`${urlVeiculos}/${id}`,{method:"DELETE"});
-        if(!resp.ok) throw new Error("Erro ao deletar");
-        mostrarMensagem("Veículo deletado!","sucesso");
+// DELETAR VEÍCULO
+async function deletarVeiculo(id) {
+    if (!confirm("Tem certeza?")) return;
+    try {
+        await fetch(`${urlVeiculos}/${id}`, { method: "DELETE" });
         listarVeiculos();
-    } catch(err){ console.error(err); mostrarMensagem(err.message); }
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao deletar veículo.");
+    }
 }
 
-// ================= FILTRO =================
-document.getElementById("busca-veiculo").addEventListener("input", async function(){
-    const termo = this.value.toLowerCase();
-    try{
-        const resp = await fetch(urlVeiculos);
-        const data = await resp.json();
-        const filtrados = data.filter(v=>v.modelo.toLowerCase().includes(termo));
-        const lista = document.getElementById("lista-veiculos");
-        lista.innerHTML="";
-        filtrados.forEach(v=>{
-            const card = document.createElement("div");
-            card.className="veiculo-card";
+// BOTÕES
+document.getElementById("btn-cadastrar-veiculo").addEventListener("click", abrirFormulario);
+document.getElementById("btn-cancelar").addEventListener("click", fecharFormulario);
 
-            const img = document.createElement("img");
-            img.src=v.imagemUrl||"https://via.placeholder.com/200x120?text=Sem+Imagem";
-            img.alt=v.modelo;
-            card.appendChild(img);
-
-            const info = document.createElement("div");
-            info.innerHTML=`
-                <h3>${v.modelo} - ${v.marca}</h3>
-                <p>Ano: ${v.ano}</p>
-                <p>Cor: ${v.cor}</p>
-                <p>Preço: R$ ${v.preco}</p>
-                <p>Quilometragem: ${v.quilometragem} km</p>
-                <p>Status: ${v.status}</p>
-            `;
-            card.appendChild(info);
-
-            const btnEditar = document.createElement("button"); btnEditar.textContent="Editar"; btnEditar.onclick=()=>abrirEdicao(v); card.appendChild(btnEditar);
-            const btnDeletar = document.createElement("button"); btnDeletar.textContent="Deletar"; btnDeletar.onclick=()=>deletarVeiculo(v.id); card.appendChild(btnDeletar);
-
-            lista.appendChild(card);
-        });
-    } catch(err){ console.error(err); mostrarMensagem("Erro ao filtrar veículos."); }
+// MENU HAMBÚRGUER
+document.getElementById("btn-menu").addEventListener("click", () => {
+    document.getElementById("menu-lateral").classList.toggle("active");
 });
 
-// ================= INICIALIZAÇÃO =================
-document.addEventListener("DOMContentLoaded", ()=>{
-    document.getElementById("area-veiculos").style.display="none";
+// INICIALIZAÇÃO
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("area-veiculos").style.display = "none";
+    document.getElementById("cadastro-veiculo").style.display = "none";
 });

@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema Automotivo - Veículos</title>
+    <title>Sistema Automotivo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <h1>🚗 Sistema Automotivo</h1>
 
-<!-- ===================== LOGIN / CADASTRO ===================== -->
+<!-- LOGIN -->
 <div id="area-login">
     <h2>Entrar / Cadastrar</h2>
     <form id="form-login">
@@ -17,28 +17,38 @@
         <input type="tel" id="login-telefone" placeholder="Telefone" required><br>
         <button type="submit">Entrar / Cadastrar</button>
     </form>
-    <div id="mensagemErro" style="color:red; margin-top:10px;"></div>
-    <div id="mensagemSucesso" style="color:green; margin-top:10px;"></div>
+    <div id="mensagemErro" style="color:red;margin-top:10px;"></div>
+    <div id="mensagemSucesso" style="color:green;margin-top:10px;"></div>
 </div>
 
-<!-- ===================== ÁREA DE VEÍCULOS ===================== -->
+<!-- ÁREA PRINCIPAL -->
 <div id="area-veiculos">
-    <h2>Gerenciar Veículos</h2>
 
-    <form id="form-veiculo">
-        <input type="text" id="veiculo-modelo" placeholder="Modelo" required>
-        <input type="text" id="veiculo-marca" placeholder="Marca" required>
-        <input type="number" id="veiculo-ano" placeholder="Ano" required>
-        <input type="text" id="veiculo-cor" placeholder="Cor" required>
-        <input type="number" id="veiculo-preco" placeholder="Preço" required step="0.01">
-        <input type="number" id="veiculo-quilometragem" placeholder="Quilometragem" required>
-        <input type="text" id="veiculo-status" placeholder="Status (disponível, vendido)" required>
-        <input type="text" id="veiculo-imagem" placeholder="URL da Imagem">
-        <button type="submit" id="btn-salvar">Salvar Veículo</button>
-    </form>
+    <!-- MENU HAMBURGUER -->
+    <button id="btn-menu">☰ Menu</button>
+    <div id="menu-lateral">
+        <button id="btn-cadastrar-veiculo">➕ Novo Veículo</button>
+    </div>
 
-    <input type="text" id="busca-veiculo" placeholder="Buscar por modelo">
+    <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
+    <div id="cadastro-veiculo">
+        <h2>Cadastro / Edição de Veículo</h2>
+        <form id="form-veiculo">
+            <input type="text" id="modelo" placeholder="Modelo" required><br>
+            <input type="text" id="marca" placeholder="Marca" required><br>
+            <input type="number" id="ano" placeholder="Ano" required><br>
+            <input type="text" id="cor" placeholder="Cor" required><br>
+            <input type="number" id="preco" placeholder="Preço" required><br>
+            <input type="number" id="quilometragem" placeholder="Quilometragem" required><br>
+            <input type="text" id="status" placeholder="Status" required><br>
+            <input type="text" id="fotoUrl" placeholder="URL da Foto" required><br>
+            <button type="submit">Salvar</button>
+            <button type="button" id="btn-cancelar">Cancelar</button>
+        </form>
+    </div>
 
+    <!-- LISTA DE VEÍCULOS -->
+    <h2>Veículos Cadastrados</h2>
     <div id="lista-veiculos"></div>
 </div>
 

@@ -1,83 +1,76 @@
 package com.sistema.automotivo.controller;
 
 import com.sistema.automotivo.model.Veiculo;
-import com.sistema.automotivo.service.VeiculoService;
-import jakarta.persistence.EntityNotFoundException;
+import com.sistema.automotivo.repository.VeiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/veiculos")
+@CrossOrigin(origins = "*") // 🔥 Libera acesso para qualquer origem (front)
 public class VeiculoController {
 
     @Autowired
-    private VeiculoService veiculoService;
+    private VeiculoRepository veiculoRepository;
 
-    // Criar veículo
-    @PostMapping
-    public ResponseEntity<Veiculo> criar(@RequestBody Veiculo veiculo) {
-        return ResponseEntity.ok(veiculoService.salvar(veiculo));
-    }
-
-    // Listar todos veículos
+    // Listar todos os veículos
     @GetMapping
-    public ResponseEntity<List<Veiculo>> listar(@RequestParam(required = false) String marca,
-                                                @RequestParam(required = false) Integer ano,
-                                                @RequestParam(required = false) String status) {
-        List<Veiculo> veiculos = veiculoService.listarTodos();
-
-        if (marca != null) {
-            veiculos.removeIf(v -> !v.getMarca().equalsIgnoreCase(marca));
-        }
-        if (ano != null) {
-            veiculos.removeIf(v -> v.getAno() != ano);
-        }
-        if (status != null) {
-            veiculos.removeIf(v -> !v.getStatus().equalsIgnoreCase(status));
-        }
-
-        return ResponseEntity.ok(veiculos);
+    public List<Veiculo> listarTodos() {
+        return veiculoRepository.findAll();
     }
 
     // Buscar veículo por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Veiculo> buscar(@PathVariable Long id) {
-        return veiculoService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new EntityNotFoundException("Veículo com ID " + id + " não encontrado."));
-    }
-
-    // Visualizar veículo com foto no Postman
-    @GetMapping("/{id}/visualizar")
-    public ResponseEntity<String> visualizarVeiculo(@PathVariable Long id) {
-        return veiculoService.buscarPorId(id)
-                .map(veiculo -> {
-                    String html = "<h1>" + veiculo.getMarca() + " " + veiculo.getModelo() + "</h1>" +
-                            "<p>Ano: " + veiculo.getAno() + "</p>" +
-                            "<p>Cor: " + veiculo.getCor() + "</p>" +
-                            "<p>Preço: R$ " + veiculo.getPreco() + "</p>" +
-                            "<p>Quilometragem: " + veiculo.getQuilometragem() + " km</p>" +
-                            "<p>Status: " + veiculo.getStatus() + "</p>" +
-                            "<img src='" + veiculo.getFotoUrl() + "' alt='Foto do Veículo' width='400'/>";
-                    return ResponseEntity.ok().header("Content-Type", "text/html").body(html);
-                })
+    public ResponseEntity<Veiculo> buscarPorId(@PathVariable Long id) {
+        Optional<Veiculo> veiculo = veiculoRepository.findById(id);
+        return veiculo.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Criar veículo
+    @PostMapping
+    public ResponseEntity<Veiculo> criar(@RequestBody Veiculo veiculo) {
+        Veiculo novoVeiculo = veiculoRepository.save(veiculo);
+        return ResponseEntity.ok(novoVeiculo);
+    }
 
     // Atualizar veículo
     @PutMapping("/{id}")
-    public ResponseEntity<Veiculo> atualizar(@PathVariable Long id, @RequestBody Veiculo veiculo) {
-        return ResponseEntity.ok(veiculoService.atualizar(id, veiculo));
+    public ResponseEntity<Veiculo> atualizar(@PathVariable Long id, @RequestBody Veiculo veiculoAtualizado) {
+        Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
+        if (veiculoOpt.isPresent()) {
+            Veiculo veiculo = veiculoOpt.get();
+            // Atualiza apenas os campos que vieram no corpo da requisição
+            if (veiculoAtualizado.getModelo() != null) veiculo.setModelo(veiculoAtualizado.getModelo());
+            if (veiculoAtualizado.getMarca() != null) veiculo.setMarca(veiculoAtualizado.getMarca());
+            if (veiculoAtualizado.getAno() != 0) veiculo.setAno(veiculoAtualizado.getAno());
+            if (veiculoAtualizado.getCor() != null) veiculo.setCor(veiculoAtualizado.getCor());
+            if (veiculoAtualizado.getPreco() != 0) veiculo.setPreco(veiculoAtualizado.getPreco());
+            if (veiculoAtualizado.getQuilometragem() != 0) veiculo.setQuilometragem(veiculoAtualizado.getQuilometragem());
+            if (veiculoAtualizado.getStatus() != null) veiculo.setStatus(veiculoAtualizado.getStatus());
+            if (veiculoAtualizado.getFotoUrl() != null) veiculo.setFotoUrl(veiculoAtualizado.getFotoUrl());
+
+            Veiculo atualizado = veiculoRepository.save(veiculo);
+            return ResponseEntity.ok(atualizado);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Deletar veículo
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        veiculoService.deletar(id);
-        return ResponseEntity.noContent().build();
+        Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
+        if (veiculoOpt.isPresent()) {
+            veiculoRepository.delete(veiculoOpt.get());
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
+
 }
