@@ -61,10 +61,17 @@ async function listarVeiculos() {
                 <p><strong>Preço:</strong> R$ ${v.preco.toLocaleString()}</p>
                 <p><strong>Km:</strong> ${v.quilometragem}</p>
                 <p><strong>Status:</strong> ${v.status}</p>
-                <button onclick="editarVeiculo(${v.id})">✏️ Editar</button>
+                <button class="btn-editar" data-id="${v.id}">✏️ Editar</button>
                 <button onclick="deletarVeiculo(${v.id})">🗑️ Deletar</button>
             `;
             lista.appendChild(card);
+        });
+
+        // Adiciona evento de clique para todos os botões de editar
+        document.querySelectorAll(".btn-editar").forEach(btn => {
+            btn.addEventListener("click", () => {
+                editarVeiculo(btn.getAttribute("data-id"));
+            });
         });
 
     } catch (error) {
@@ -118,7 +125,6 @@ document.getElementById("form-veiculo").addEventListener("submit", async (event)
 
         if (!response.ok) throw new Error("Erro ao salvar veículo");
 
-        // Atualiza a lista de veículos somente após salvar
         await listarVeiculos();
         fecharFormulario();
 
@@ -135,7 +141,6 @@ async function editarVeiculo(id) {
         if (!response.ok) throw new Error("Veículo não encontrado");
         veiculoEditando = await response.json();
 
-        // Preenche formulário de cadastro com dados do veículo
         document.getElementById("modelo").value = veiculoEditando.modelo;
         document.getElementById("marca").value = veiculoEditando.marca;
         document.getElementById("ano").value = veiculoEditando.ano;
