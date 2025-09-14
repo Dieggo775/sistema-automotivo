@@ -1,9 +1,11 @@
 const urlVeiculos = "http://localhost:8080/veiculos";
+
 let veiculoEditando = null;
 
-// LOGIN
+// ===================== LOGIN =====================
 document.getElementById("form-login").addEventListener("submit", async function (e) {
     e.preventDefault();
+
     const nome = document.getElementById("login-nome").value;
     const email = document.getElementById("login-email").value;
     const telefone = document.getElementById("login-telefone").value;
@@ -21,6 +23,8 @@ document.getElementById("form-login").addEventListener("submit", async function 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nome, email, telefone })
             });
+
+            if (!cadastrarResponse.ok) throw new Error("Erro ao cadastrar usuário");
             usuario = await cadastrarResponse.json();
             document.getElementById("mensagemSucesso").innerText = "Usuário cadastrado e logado!";
         }
@@ -28,17 +32,19 @@ document.getElementById("form-login").addEventListener("submit", async function 
         document.getElementById("area-login").style.display = "none";
         document.getElementById("area-veiculos").style.display = "block";
         listarVeiculos();
+
     } catch (error) {
-        console.error(error);
+        console.error("Erro:", error);
         document.getElementById("mensagemErro").innerText = "Erro ao acessar usuário.";
     }
 });
 
-// LISTAR VEÍCULOS
+// ===================== LISTAR VEÍCULOS =====================
 async function listarVeiculos() {
     try {
         const response = await fetch(urlVeiculos);
         if (!response.ok) throw new Error("Erro ao buscar veículos");
+
         const veiculos = await response.json();
         const lista = document.getElementById("lista-veiculos");
         lista.innerHTML = "";
@@ -46,6 +52,7 @@ async function listarVeiculos() {
         veiculos.forEach(v => {
             const card = document.createElement("div");
             card.classList.add("veiculo-card");
+
             card.innerHTML = `
                 <img src="${v.fotoUrl}" alt="${v.modelo}" class="veiculo-foto">
                 <h3>${v.marca} - ${v.modelo}</h3>
@@ -59,23 +66,30 @@ async function listarVeiculos() {
             `;
             lista.appendChild(card);
         });
+
     } catch (error) {
-        console.error(error);
-        alert("Erro ao listar veículos.");
+        console.error("Erro:", error);
+        alert("Erro ao listar veículos. Confira o backend.");
     }
 }
 
-// ABRIR / FECHAR FORMULÁRIO
-function abrirFormulario() { document.getElementById("cadastro-veiculo").style.display = "block"; }
+// ===================== ABRIR / FECHAR FORMULÁRIO =====================
+function abrirFormulario() {
+    const menu = document.getElementById("menu-lateral");
+    menu.classList.add("active"); // abre o menu lateral
+    document.getElementById("cadastro-veiculo").style.display = "block";
+}
+
 function fecharFormulario() {
     document.getElementById("cadastro-veiculo").style.display = "none";
     document.getElementById("form-veiculo").reset();
     veiculoEditando = null;
 }
 
-// CADASTRAR / ATUALIZAR VEÍCULO
+// ===================== CADASTRAR / ATUALIZAR VEÍCULO =====================
 document.getElementById("form-veiculo").addEventListener("submit", async (event) => {
     event.preventDefault();
+
     const veiculoData = {
         modelo: document.getElementById("modelo").value,
         marca: document.getElementById("marca").value,
@@ -102,19 +116,24 @@ document.getElementById("form-veiculo").addEventListener("submit", async (event)
                 body: JSON.stringify(veiculoData)
             });
         }
+
         listarVeiculos();
         fecharFormulario();
+
     } catch (error) {
-        console.error(error);
+        console.error("Erro ao salvar veículo:", error);
         alert("Erro ao salvar veículo.");
     }
 });
 
-// EDITAR VEÍCULO
+// ===================== EDITAR VEÍCULO =====================
 async function editarVeiculo(id) {
     try {
         const response = await fetch(`${urlVeiculos}/${id}`);
+        if (!response.ok) throw new Error("Veículo não encontrado");
         veiculoEditando = await response.json();
+
+        // Preenche os campos do formulário
         document.getElementById("modelo").value = veiculoEditando.modelo;
         document.getElementById("marca").value = veiculoEditando.marca;
         document.getElementById("ano").value = veiculoEditando.ano;
@@ -123,18 +142,23 @@ async function editarVeiculo(id) {
         document.getElementById("quilometragem").value = veiculoEditando.quilometragem;
         document.getElementById("status").value = veiculoEditando.status;
         document.getElementById("fotoUrl").value = veiculoEditando.fotoUrl;
-        abrirFormulario();
+
+        abrirFormulario(); // abre o menu lateral com formulário preenchido
     } catch (error) {
         console.error(error);
         alert("Erro ao carregar veículo para edição.");
     }
 }
 
-// DELETAR VEÍCULO
+// ===================== DELETAR VEÍCULO =====================
 async function deletarVeiculo(id) {
-    if (!confirm("Tem certeza?")) return;
+    if (!confirm("Tem certeza que deseja excluir este veículo?")) return;
+
     try {
-        await fetch(`${urlVeiculos}/${id}`, { method: "DELETE" });
+        const response = await fetch(`${urlVeiculos}/${id}`, { method: "DELETE" });
+        if (!response.ok) throw new Error("Erro ao deletar veículo");
+
+        alert("Veículo excluído com sucesso!");
         listarVeiculos();
     } catch (error) {
         console.error(error);
@@ -142,16 +166,22 @@ async function deletarVeiculo(id) {
     }
 }
 
-// BOTÕES
-document.getElementById("btn-cadastrar-veiculo").addEventListener("click", abrirFormulario);
-document.getElementById("btn-cancelar").addEventListener("click", fecharFormulario);
-
-// MENU HAMBÚRGUER
-document.getElementById("btn-menu").addEventListener("click", () => {
-    document.getElementById("menu-lateral").classList.toggle("active");
+// ===================== BOTÕES =====================
+document.getElementById("btn-cadastrar-veiculo").addEventListener("click", () => {
+    veiculoEditando = null;
+    abrirFormulario();
 });
 
-// INICIALIZAÇÃO
+document.getElementById("btn-cancelar").addEventListener("click", () => {
+    fecharFormulario();
+});
+
+// ===================== MENU HAMBÚRGUER =====================
+function toggleMenu() {
+    document.getElementById("menu-lateral").classList.toggle("active");
+}
+
+// ===================== INICIALIZAÇÃO =====================
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("area-veiculos").style.display = "none";
     document.getElementById("cadastro-veiculo").style.display = "none";
