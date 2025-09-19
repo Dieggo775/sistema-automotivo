@@ -27,3 +27,8 @@ mvn spring-boot:run
 
 # Acesse em:
 http://localhost:8080
+
+## 🧪 Testes com Postman
+A collection do Postman está disponível em:
+[postman/Sistema_Automotivo.postman_collection.json](postman/Sistema_Automotivo.postman_collection.json)
+
