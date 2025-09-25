@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Automotivo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>🚗 Sistema Automotivo</h1>
+
+<!-- ===================== ÁREA DE LOGIN ===================== -->
+<div id="area-login">
+    <h2>Entrar / Cadastrar Usuário</h2>
+    <form id="form-login">
+        <input type="text" id="login-nome" placeholder="Nome" required><br>
+        <input type="email" id="login-email" placeholder="Email" required><br>
+        <input type="tel" id="login-telefone" placeholder="Telefone" required><br>
+        <button type="submit">Entrar / Cadastrar</button>
+    </form>
+    <div id="mensagemErro" style="color: red; margin-top: 10px;"></div>
+    <div id="mensagemSucesso" style="color: green; margin-top: 10px;"></div>
+</div>
+
+<!-- ===================== ÁREA DE VEÍCULOS ===================== -->
+<div id="area-veiculos">
+
+    <!-- Botão do menu hamburguer -->
+    <button id="btn-menu" onclick="toggleMenu()">☰ Menu</button>
+
+    <!-- Aba lateral -->
+    <div id="menu-lateral" class="menu-lateral">
+        <h3>Cadastro / Edição de Veículo</h3>
+        <button id="btn-cadastrar-veiculo">➕ Novo Veículo</button>
+
+        <div id="cadastro-veiculo" class="cadastro-veiculo">
+            <form id="form-veiculo">
+                <input type="text" id="modelo" placeholder="Modelo" required><br>
+                <input type="text" id="marca" placeholder="Marca" required><br>
+                <input type="number" id="ano" placeholder="Ano" required><br>
+                <input type="text" id="cor" placeholder="Cor" required><br>
+                <input type="number" id="preco" placeholder="Preço" step="0.01" required><br>
+                <input type="number" id="quilometragem" placeholder="Quilometragem" required><br>
+                <input type="text" id="status" placeholder="Status" required><br>
+                <input type="text" id="fotoUrl" placeholder="URL da Foto"><br>
+                <button type="submit">Salvar</button>
+                <button type="button" id="btn-cancelar">Cancelar</button>
+            </form>
+        </div>
+
+        <!-- ===================== FILTROS ===================== -->
+        <h3>Filtros</h3>
+        <select id="filtro-campo">
+            <option value="">Escolha o campo</option>
+            <option value="marca">Marca</option>
+            <option value="modelo">Modelo</option>
+            <option value="ano">Ano</option>
+        </select><br>
+        <input type="text" id="filtro-valor" placeholder="Digite o valor"><br>
+
+        <select id="filtro-status">
+            <option value="todos">Todos</option>
+            <option value="disponivel">Disponível</option>
+            <option value="vendido">Vendido</option>
+        </select><br>
+
+        <button id="btn-filtrar">Aplicar Filtro</button>
+        <button id="btn-cancelar-filtro">Cancelar Filtro</button>
+
+    </div>
+
+    <!-- Lista de Veículos -->
+    <div id="lista-veiculos-container">
+        <h2>Lista de Veículos</h2>
+        <div id="lista-veiculos"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

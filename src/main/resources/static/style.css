@@ -1,0 +1,189 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f5f1f1;
+}
+
+h1, h2, h3 {
+  color: #030303;
+}
+
+/* Área de login */
+#area-login {
+  max-width: 400px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#area-login input, #form-veiculo input, #filtro-valor, #filtro-campo, #filtro-status {
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+#area-login button, #form-veiculo button, #btn-filtrar, #btn-cancelar-filtro {
+  padding: 10px;
+  width: 100%;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#area-login button:hover, #form-veiculo button:hover, #btn-filtrar:hover, #btn-cancelar-filtro:hover {
+  background-color: #0056b3;
+}
+
+#mensagemErro, #mensagemSucesso {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* Área de veículos */
+#area-veiculos {
+  margin-top: 20px;
+}
+
+/* Lista de veículos */
+#lista-veiculos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.veiculo-card {
+  border-radius: 12px;
+  padding: 15px;
+  background-color: #fff;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.veiculo-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.veiculo-card h3 {
+  margin: 8px 0;
+  font-size: 1.1em;
+}
+
+.veiculo-card p {
+  margin: 4px 0;
+  font-size: 0.95em;
+  color: #222;
+}
+
+.veiculo-card button {
+  margin: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.veiculo-card button:first-of-type {
+  background-color: #353333;
+  color: white;
+}
+
+.veiculo-card button:first-of-type:hover {
+  background-color: #0c0c0c;
+}
+
+.veiculo-card button:last-of-type {
+  background-color: #b14c4c;
+  color: white;
+}
+
+.veiculo-card button:last-of-type:hover {
+  background-color: #a71d2a;
+}
+
+/* Botão hamburguer */
+#menu-btn {
+  font-size: 28px;
+  cursor: pointer;
+  margin: 10px;
+  user-select: none;
+}
+
+/* ===================== MENU LATERAL ===================== */
+.menu-lateral {
+  position: fixed;
+  top: 0;
+  right: -350px;
+  width: 300px;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+  padding: 20px;
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.menu-lateral.active {
+  right: 0;
+}
+
+.menu-lateral h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.menu-lateral input, .menu-lateral select {
+  margin-bottom: 10px;
+  padding: 8px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.menu-lateral button {
+  padding: 10px;
+  width: 100%;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.menu-lateral button:hover {
+  background-color: #218838;
+}
+
+/* Botões de filtro */
+#btn-filtrar {
+  background-color: #007bff;
+}
+
+#btn-filtrar:hover {
+  background-color: #0056b3;
+}
+
+#btn-cancelar-filtro {
+  background-color: #b14c4c;
+}
+
+#btn-cancelar-filtro:hover {
+  background-color: #a71d2a;
+}
